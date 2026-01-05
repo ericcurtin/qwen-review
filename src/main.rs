@@ -68,7 +68,7 @@ fn fetch_pr_info(pr_info: &PrInfo) -> Result<String, String> {
 
 fn review_with_qwen(pr_metadata: &str, diff: &str) -> Result<(), String> {
     let prompt = format!(
-        r#"You are a code reviewer. Please review this GitHub Pull Request.
+        r#"You are a code reviewer. Review this GitHub Pull Request by analyzing BOTH the diff AND the local codebase.
 
 ## PR Information
 {}
@@ -78,14 +78,25 @@ fn review_with_qwen(pr_metadata: &str, diff: &str) -> Result<(), String> {
 {}
 ```
 
-Please provide a thorough code review covering:
-1. **Summary**: Brief overview of what this PR does
-2. **Code Quality**: Issues with code style, readability, or maintainability
-3. **Potential Bugs**: Any logic errors or edge cases not handled
-4. **Security**: Any security concerns
-5. **Suggestions**: Improvements or alternative approaches
+## Your Task
 
-Be specific and reference line numbers or code snippets where relevant."#,
+IMPORTANT: You have access to the full codebase in the current directory. Use your tools to:
+1. Read files that are modified in this PR to understand the full context
+2. Search for callers/usages of any modified functions, classes, or APIs
+3. Check if the changes break any existing code or tests
+4. Look at related files to understand architectural patterns
+
+Then provide a review covering:
+
+1. **Summary**: What this PR does
+2. **Codebase Impact**: How these changes affect other parts of the codebase (search for usages!)
+3. **Breaking Changes**: Any APIs, function signatures, or behaviors that could break callers
+4. **Code Quality**: Style, readability, maintainability issues
+5. **Potential Bugs**: Logic errors, edge cases, race conditions
+6. **Security**: Any security concerns
+7. **Suggestions**: Improvements or alternative approaches
+
+Be specific with file paths and line numbers. Actually explore the codebase - don't just review the diff in isolation."#,
         pr_metadata, diff
     );
 
